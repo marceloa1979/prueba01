@@ -1,0 +1,88 @@
+managed; // implementation in class zbp_i_travel_0447 unique;
+//strict ( 2 ); //Uncomment this line in order to enable strict mode 2. The strict mode has two variants (strict(1), strict(2)) and is prerequisite to be future proof regarding syntax and to be able to release your BO.
+
+define behavior for Z_I_TRAVEL_0447 alias Travel
+implementation in class zbp_i_travel_0447 unique
+persistent table ztb_trvl_usr0447
+with additional save
+lock master
+authorization master ( instance )
+etag master last_changed_at
+{
+  field ( mandatory : create ) travel_id, agency_id, overall_status, booking_fee, currency_code;
+  field ( readonly ) last_changed_at, last_changed_by, created_at, created_by;
+
+  // dynamic field control
+  field ( features : instance ) travel_id, overall_status ;
+
+  create;
+  update;
+  delete;
+
+  validation validateCustomer   on save { create; field customer_id; }
+  validation validateDates      on save { create; field begin_date, end_date; }
+  validation validateStatus     on save { create; field overall_status; }
+
+  action ( features : instance ) acceptTravel result [1] $self;
+  action ( features : instance ) rejectTravel result [1] $self;
+  action createTravelByTemplate result [1] $self;
+
+  association _Booking { create ( features : instance ); }
+
+  mapping for ztb_trvl_usr0447 corresponding;
+}
+
+
+
+
+define behavior for Z_I_BOOKING_0447 alias Booking
+implementation in class zbp_i_booking_0447 unique
+persistent table ztb_bkng_usr0447
+lock dependent by _Travel // ( travel_id = _Travel.travel_id )
+authorization dependent by _Travel
+etag master last_change_at
+{
+  field ( mandatory : create ) carrier_id, connection_id, flight_date, booking_status;
+  field ( readonly ) travel_id;
+
+  update;
+  delete;
+
+  validation validateStatus on save { create; field booking_status; }
+
+  determination calculateTotalFlightPrice on modify { field flight_price, currency_code; }
+
+  association _Travel { }
+  association _BookingSupplement { create; }
+
+  mapping for ztb_bkng_usr0447 corresponding
+  {           // CDS = Tabla BD
+    last_change_at = last_changed_at;
+  }
+
+}
+
+
+
+
+
+define behavior for Z_I_BOOKSUPPL_0447 alias Supplement
+implementation in class zbp_i_booksuppl_0447 unique
+with unmanaged save
+lock dependent by _Travel
+authorization dependent by _Travel
+etag master last_changed_at
+{
+  field ( mandatory : create ) supplement_id, price;
+  field ( readonly ) travel_id, booking_id;
+
+  update;
+  delete;
+
+  determination calculateTotalSupplPrice on  modify { field price, currency; }
+
+    association _Travel { }
+//  association _Booking;
+
+  mapping for ztb_log_usr0447 corresponding;
+}

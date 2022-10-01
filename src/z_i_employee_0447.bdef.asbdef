@@ -1,0 +1,17 @@
+managed implementation in class zbp_i_employee_0447 unique;
+with draft;
+
+define behavior for Z_I_employee_0447 alias Employee
+persistent table zemployee_0447
+draft table zemployee_0447_d
+lock master
+total etag lchg_date_time
+etag master lchg_date_time
+//authorization master ( instance )
+//etag master <field_name>
+{
+  field( readonly, numbering : managed ) e_number;
+  create;
+  update;
+  delete;
+}
