@@ -22,6 +22,7 @@ CLASS zcl_test_0447 IMPLEMENTATION.
 *it_travel_id = VALUE #( FOR GROUPS <booking_suppl> OF booking_key IN keys
 * GROUP BY booking_key-travel_id WITHOUT MEMBERS ( <booking_suppl> ) )
 *).
+data: vl_uno TYPE c.
 
 
 
